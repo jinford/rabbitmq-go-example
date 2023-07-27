@@ -7,7 +7,9 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/jinford/rabbitmq-go-example/calculator/pkg/message"
+	"github.com/jinford/rabbitmq-go-example/calculator/pkg/command"
+	"github.com/jinford/rabbitmq-go-example/calculator/pkg/service"
+	"github.com/jinford/rabbitmq-go-example/shared/message"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"golang.org/x/sync/errgroup"
 )
@@ -30,7 +32,8 @@ func main() {
 	eg, ctx := errgroup.WithContext(ctx)
 
 	eg.Go(func() error {
-		return consumer.Consume(ctx, message.CommandAdd, AddCommandHandler(publisher))
+		routingKey := message.ServiceCommandRoutingKey(service.Calculator, command.CommandAdd)
+		return consumer.Consume(ctx, routingKey, AddCommandHandler(publisher))
 	})
 
 	if err := eg.Wait(); err != nil {

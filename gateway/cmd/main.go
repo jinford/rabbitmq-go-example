@@ -8,6 +8,8 @@ import (
 	"syscall"
 
 	"github.com/jinford/rabbitmq-go-example/calculator/pkg/event"
+	"github.com/jinford/rabbitmq-go-example/calculator/pkg/service"
+	"github.com/jinford/rabbitmq-go-example/shared/message"
 	amqp "github.com/rabbitmq/amqp091-go"
 	"golang.org/x/sync/errgroup"
 )
@@ -40,7 +42,8 @@ func main() {
 	})
 
 	eg.Go(func() error {
-		return subscriber.Subscribe(ctx, event.Calculated, CalculatedEventHandler())
+		routingKey := message.EeventRoutingKey(service.Calculator, event.Calculated)
+		return subscriber.Subscribe(ctx, routingKey, CalculatedEventHandler())
 	})
 
 	if err := eg.Wait(); err != nil {

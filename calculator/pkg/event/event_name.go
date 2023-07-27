@@ -1,5 +1,7 @@
 package event
 
+import "github.com/jinford/rabbitmq-go-example/shared/message"
+
 var (
-	Calculated = "calculated"
+	Calculated message.EventName = "calculated"
 )

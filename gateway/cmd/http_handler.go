@@ -8,7 +8,9 @@ import (
 	"net/http"
 
 	"github.com/google/uuid"
-	"github.com/jinford/rabbitmq-go-example/calculator/pkg/message"
+	"github.com/jinford/rabbitmq-go-example/calculator/pkg/command"
+	"github.com/jinford/rabbitmq-go-example/calculator/pkg/service"
+	"github.com/jinford/rabbitmq-go-example/shared/message"
 	"github.com/labstack/echo/v4"
 )
 
@@ -53,7 +55,7 @@ func PostAddHandler(p *MessageProducer) echo.HandlerFunc {
 }
 
 func InvokeCalcuratorAdd(ctx context.Context, p *MessageProducer, id string, a int, b int) error {
-	reqBody := &message.RequestBody{
+	reqBody := &command.RequestBody{
 		ID: id,
 		A:  a,
 		B:  b,
@@ -64,7 +66,9 @@ func InvokeCalcuratorAdd(ctx context.Context, p *MessageProducer, id string, a i
 		return fmt.Errorf("json.Marshal: %w", err)
 	}
 
-	if err := p.Produce(ctx, message.CommandAdd, msgBody); err != nil {
+	routingKey := message.ServiceCommandRoutingKey(service.Calculator, command.CommandAdd)
+
+	if err := p.Produce(ctx, routingKey, msgBody); err != nil {
 		return fmt.Errorf("p.Produce: %w", err)
 	}
 

@@ -6,13 +6,15 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/jinford/rabbitmq-go-example/calculator/pkg/command"
 	"github.com/jinford/rabbitmq-go-example/calculator/pkg/event"
-	"github.com/jinford/rabbitmq-go-example/calculator/pkg/message"
+	"github.com/jinford/rabbitmq-go-example/calculator/pkg/service"
+	"github.com/jinford/rabbitmq-go-example/shared/message"
 )
 
 func AddCommandHandler(p *EventPublisher) func(ctx context.Context, msgBpdy []byte) error {
 	return func(ctx context.Context, msgBpdy []byte) error {
-		reqBody := new(message.RequestBody)
+		reqBody := new(command.RequestBody)
 		if err := json.Unmarshal(msgBpdy, reqBody); err != nil {
 			return fmt.Errorf("json.Unmarshal: %w", err)
 		}
@@ -34,7 +36,8 @@ func AddCommandHandler(p *EventPublisher) func(ctx context.Context, msgBpdy []by
 
 		log.Println("[PUBLISH EVNET] calculated:", reqBody.ID)
 
-		if err := p.Publish(ctx, event.Calculated, msgBody); err != nil {
+		routingKey := message.EeventRoutingKey(service.Calculator, event.Calculated)
+		if err := p.Publish(ctx, routingKey, msgBody); err != nil {
 			return fmt.Errorf("p.Publish: %w", err)
 		}
 

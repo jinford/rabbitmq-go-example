@@ -1,4 +1,4 @@
-package message
+package command
 
 type RequestBody struct {
 	ID string
